@@ -12,36 +12,38 @@ export default function Sidebar() {
       <div className="p-4 border-b border-gray-dark flex items-center justify-between">
         {!collapsed && <h1 className="text-xl font-bold text-primary">JobTok</h1>}
         {collapsed && <span className="text-xl font-bold text-primary">JT</span>}
-        <button 
-          onClick={toggleSidebar}
-          className="p-2 rounded-full hover:bg-gray-dark/10 text-gray-medium"
-        >
-          <i className={`${collapsed ? 'ri-menu-unfold-line' : 'ri-menu-fold-line'} text-xl`}></i>
-        </button>
       </div>
 
       <nav className="flex flex-col flex-1 p-4 space-y-6">
+        <div
+          onClick={toggleSidebar}
+          className={`nav-item flex items-center ${collapsed ? 'justify-center' : 'space-x-3'} p-2 rounded-lg transition-colors cursor-pointer text-gray-medium hover:bg-gray-dark/10`}
+        >
+          <i className="ri-menu-line text-xl"></i>
+          {!collapsed && <span className="font-medium">Menu</span>}
+        </div>
+
         <Link href="/">
           <div className={`nav-item flex items-center ${collapsed ? 'justify-center' : 'space-x-3'} p-2 rounded-lg transition-colors cursor-pointer ${location === '/' ? 'bg-primary/10 text-primary' : 'text-gray-medium hover:bg-gray-dark/10'}`}>
             <i className={`${location === '/' ? 'ri-home-4-fill' : 'ri-home-4-line'} text-xl`}></i>
             {!collapsed && <span className="font-medium">Home</span>}
           </div>
         </Link>
-        
+
         <Link href="/discover">
           <div className={`nav-item flex items-center ${collapsed ? 'justify-center' : 'space-x-3'} p-2 rounded-lg transition-colors cursor-pointer ${location === '/discover' ? 'bg-primary/10 text-primary' : 'text-gray-medium hover:bg-gray-dark/10'}`}>
             <i className={`${location === '/discover' ? 'ri-search-fill' : 'ri-search-line'} text-xl`}></i>
             {!collapsed && <span className="font-medium">Discover</span>}
           </div>
         </Link>
-        
+
         <Link href="/messages">
           <div className={`nav-item flex items-center ${collapsed ? 'justify-center' : 'space-x-3'} p-2 rounded-lg transition-colors cursor-pointer ${location === '/messages' ? 'bg-primary/10 text-primary' : 'text-gray-medium hover:bg-gray-dark/10'}`}>
             <i className={`${location === '/messages' ? 'ri-mail-fill' : 'ri-mail-line'} text-xl`}></i>
             {!collapsed && <span className="font-medium">Messages</span>}
           </div>
         </Link>
-        
+
         <Link href="/profile">
           <div className={`nav-item flex items-center ${collapsed ? 'justify-center' : 'space-x-3'} p-2 rounded-lg transition-colors cursor-pointer ${location === '/profile' ? 'bg-primary/10 text-primary' : 'text-gray-medium hover:bg-gray-dark/10'}`}>
             <i className={`${location === '/profile' ? 'ri-user-fill' : 'ri-user-line'} text-xl`}></i>
