@@ -28,7 +28,7 @@ export default defineConfig({
       "@shared": path.resolve(__dirname, "shared"),
     },
   },
-  root: path.resolve(__dirname, "client", "src"),
+  root: path.resolve(__dirname, "client"), // Changed from "client/src" to "client"
   build: {
     outDir: path.resolve(__dirname, "dist/public"),
     emptyOutDir: true,
