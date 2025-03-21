@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'wouter';
 import { useSidebar } from '@/contexts/SidebarContext';
+import ThemeToggle from './ThemeToggle';
 
 export default function Sidebar() {
   const [location] = useLocation();
@@ -50,6 +51,7 @@ export default function Sidebar() {
             {!collapsed && <span className="font-medium">Profile</span>}
           </div>
         </Link>
+        <ThemeToggle />
       </nav>
 
       <div className="p-4 border-t border-gray-dark">
