@@ -1,18 +1,25 @@
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
+import { useSupabase } from '@/hooks/use-supabase';
 import { type User, type Video, type Application } from '@shared/schema';
 import ProfileModal from '@/components/ProfileModal';
+import AuthModal from '@/components/AuthModal';
 
 export default function Profile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { user, uploadFile, getFileUrl } = useSupabase();
   
-  // Fetch current user
-  const { data: user, isLoading: userLoading } = useQuery<User>({
+  // Fetch profile data
+  const { data: profile, isLoading: profileLoading } = useQuery<User>({
     queryKey: ['/api/users/me'],
+    enabled: !!user,
   });
   
   // Fetch user videos
@@ -26,8 +33,56 @@ export default function Profile() {
     queryKey: ['/api/applications'],
     enabled: !!user,
   });
+
+  // Resume upload mutation
+  const resumeUploadMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const filePath = `${user!.id}/${file.name}`;
+      const { error } = await uploadFile('resumes', filePath, file);
+      if (error) throw error;
+      
+      const fileUrl = getFileUrl('resumes', filePath);
+      // Update user profile with resume URL
+      const res = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resumeUrl: fileUrl }),
+      });
+      if (!res.ok) throw new Error('Failed to update profile');
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Resume uploaded successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/users/me'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.includes('pdf') && !file.type.includes('word')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a PDF or Word document",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    await resumeUploadMutation.mutate(file);
+  };
   
-  if (userLoading) {
+  if (profileLoading) {
     return (
       <div className="min-h-screen bg-secondary text-white p-4 pb-16">
         <div className="h-40 bg-gradient-to-r from-primary to-accent mb-14"></div>
@@ -48,7 +103,8 @@ export default function Profile() {
           <i className="ri-user-line text-4xl mb-4"></i>
           <h2 className="text-xl font-bold mb-2">Sign In Required</h2>
           <p className="text-gray-medium mb-4">Please sign in to view your profile</p>
-          <Button>Sign In</Button>
+          <Button onClick={() => setShowAuthModal(true)}>Sign In</Button>
+          <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
         </div>
       </div>
     );
@@ -67,15 +123,15 @@ export default function Profile() {
         
         <div className="relative px-4 pb-6">
           <div className="absolute -top-14 left-4 w-28 h-28 rounded-full border-4 border-secondary overflow-hidden">
-            {user.profileImage ? (
+            {profile?.profileImage ? (
               <img 
-                src={user.profileImage} 
-                alt={user.fullName} 
+                src={profile.profileImage} 
+                alt={profile.fullName} 
                 className="w-full h-full object-cover"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-primary text-white text-3xl">
-                {user.fullName.charAt(0)}
+                {profile?.fullName?.charAt(0)}
               </div>
             )}
           </div>
@@ -83,8 +139,10 @@ export default function Profile() {
           <div className="pt-16">
             <div className="flex justify-between items-start">
               <div>
-                <h2 className="text-xl font-bold">{user.fullName}</h2>
-                <p className="text-gray-medium text-sm">{user.headline || (user.userType === 'employer' ? user.companyName : 'Add a headline')}</p>
+                <h2 className="text-xl font-bold">{profile?.fullName}</h2>
+                <p className="text-gray-medium text-sm">
+                  {profile?.headline || (profile?.userType === 'employer' ? profile?.companyName : 'Add a headline')}
+                </p>
               </div>
               <Button 
                 className="bg-accent text-white" 
@@ -103,18 +161,18 @@ export default function Profile() {
                 <span className="font-semibold">{videos?.length || 0}</span> Videos
               </div>
               <div>
-                <span className="font-semibold">{user.skills?.length || 0}</span> Skills
+                <span className="font-semibold">{profile?.skills?.length || 0}</span> Skills
               </div>
             </div>
             
             <p className="mt-4 text-sm">
-              {user.bio || 'Add a bio to tell people more about yourself.'}
+              {profile?.bio || 'Add a bio to tell people more about yourself.'}
             </p>
             
-            {user.location && (
+            {profile?.location && (
               <div className="flex mt-3 text-accent items-center text-sm">
                 <i className="ri-map-pin-line mr-1"></i>
-                <span>{user.location}</span>
+                <span>{profile.location}</span>
               </div>
             )}
           </div>
@@ -122,11 +180,17 @@ export default function Profile() {
           <div className="mt-6">
             <Tabs defaultValue="videos">
               <TabsList className="w-full bg-transparent border-b border-gray-dark">
-                <TabsTrigger value="videos" className="data-[state=active]:border-b-2 data-[state=active]:border-primary">Videos</TabsTrigger>
-                {user.userType === 'job_seeker' && (
-                  <TabsTrigger value="resume" className="data-[state=active]:border-b-2 data-[state=active]:border-primary">Resume</TabsTrigger>
+                <TabsTrigger value="videos" className="data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Videos
+                </TabsTrigger>
+                {profile?.userType === 'job_seeker' && (
+                  <TabsTrigger value="resume" className="data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                    Resume
+                  </TabsTrigger>
                 )}
-                <TabsTrigger value="applications" className="data-[state=active]:border-b-2 data-[state=active]:border-primary">Applications</TabsTrigger>
+                <TabsTrigger value="applications" className="data-[state=active]:border-b-2 data-[state=active]:border-primary">
+                  Applications
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="videos" className="mt-4">
@@ -150,6 +214,7 @@ export default function Profile() {
                             <i className="ri-movie-line text-3xl text-gray-medium"></i>
                           </div>
                         )}
+                        
                         <div className="absolute bottom-2 left-2 right-2">
                           <div className="text-xs font-medium">{video.title}</div>
                           <div className="text-xs text-gray-medium flex items-center">
@@ -163,7 +228,7 @@ export default function Profile() {
                   <div className="text-center py-8">
                     <i className="ri-video-line text-3xl text-gray-medium mb-2"></i>
                     <p className="text-gray-medium">
-                      {user.userType === 'employer' 
+                      {profile?.userType === 'employer' 
                         ? "No job videos posted yet. Create one to attract talent!" 
                         : "No video resume yet. Create one to showcase your skills!"}
                     </p>
@@ -174,13 +239,31 @@ export default function Profile() {
                 )}
               </TabsContent>
               
-              {user.userType === 'job_seeker' && (
+              {profile?.userType === 'job_seeker' && (
                 <TabsContent value="resume" className="mt-4 p-4 bg-dark rounded-lg">
                   <h3 className="font-semibold mb-3">Traditional Resume</h3>
-                  <Button className="w-full border border-dashed border-gray-medium bg-transparent text-gray-medium py-6">
-                    <i className="ri-upload-2-line text-2xl mr-2"></i>
-                    <span>Upload Resume (PDF or DOCX)</span>
-                  </Button>
+                  <label className="block">
+                    <input
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      onChange={handleResumeUpload}
+                      className="hidden"
+                    />
+                    <div className="w-full border border-dashed border-gray-medium bg-transparent text-gray-medium py-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-dark/10 transition-colors">
+                      <i className="ri-upload-2-line text-2xl mb-2"></i>
+                      <span>{profile.resumeUrl ? 'Update Resume' : 'Upload Resume'} (PDF or Word)</span>
+                      {profile.resumeUrl && (
+                        <a 
+                          href={profile.resumeUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-accent mt-2 hover:underline"
+                        >
+                          View Current Resume
+                        </a>
+                      )}
+                    </div>
+                  </label>
                 </TabsContent>
               )}
               
@@ -213,7 +296,7 @@ export default function Profile() {
                           </div>
                         </div>
                         <div className="text-xs text-gray-medium">
-                          Applied {new Date(application.createdAt).toLocaleDateString()}
+                          Applied {application.createdAt && new Date(application.createdAt).toLocaleDateString()}
                         </div>
                       </div>
                     ))}
@@ -222,11 +305,11 @@ export default function Profile() {
                   <div className="text-center py-8">
                     <i className="ri-file-list-3-line text-3xl text-gray-medium mb-2"></i>
                     <p className="text-gray-medium">
-                      {user.userType === 'employer' 
+                      {profile?.userType === 'employer' 
                         ? "No applications received yet." 
                         : "You haven't applied to any jobs yet."}
                     </p>
-                    {user.userType === 'job_seeker' && (
+                    {profile?.userType === 'job_seeker' && (
                       <Button className="mt-4" variant="secondary">
                         Browse Jobs
                       </Button>
@@ -240,7 +323,7 @@ export default function Profile() {
       </div>
       
       {isEditModalOpen && (
-        <ProfileModal user={user} onClose={() => setIsEditModalOpen(false)} />
+        <ProfileModal user={profile!} onClose={() => setIsEditModalOpen(false)} />
       )}
     </div>
   );

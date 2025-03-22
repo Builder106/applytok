@@ -103,16 +103,16 @@ export interface Database {
       }
       messages: {
         Row: {
-          id: string
-          sender_id: string
-          receiver_id: string
+          id: number
+          senderId: number
+          receiverId: number
           content: string
           read: boolean
-          created_at: string
+          createdAt: string
         }
         Insert: {
-          sender_id: string
-          receiver_id: string
+          senderId: number
+          receiverId: number
           content: string
           read?: boolean
         }

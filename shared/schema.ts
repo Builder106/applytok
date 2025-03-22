@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   companyName: text("company_name"), // Only for employers
   companyLogo: text("company_logo"), // Only for employers
   skills: text("skills").array(),
+  resumeUrl: text("resume_url"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
