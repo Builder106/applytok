@@ -1,10 +1,23 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './types.ts'
 
-const supabaseUrl = process.env.SUPABASE_URL || ''
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || ''
+// Get environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+// Check if environment variables are loaded
+if (!supabaseUrl) {
+  console.error('VITE_SUPABASE_URL is missing or empty. Make sure your .env file is being loaded correctly.')
+}
+
+if (!supabaseAnonKey) {
+  console.error('VITE_SUPABASE_ANON_KEY is missing or empty. Make sure your .env file is being loaded correctly.')
+}
+
+export const supabase = createClient<Database>(
+  supabaseUrl || '',
+  supabaseAnonKey || ''
+)
 
 // Types for Supabase tables
 export type Tables = Database['public']['Tables']
