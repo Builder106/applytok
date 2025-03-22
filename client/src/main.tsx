@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App";
-import "./index.css";
+import "./index.tailwind.css";
 import { ThemeProvider } from './contexts/ThemeContext';
 
 // Add global styles
