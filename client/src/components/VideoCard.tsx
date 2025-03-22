@@ -182,14 +182,16 @@ export default function VideoCard({ video }: VideoCardProps) {
         <div className="progress" style={{ width: `${progress}%` }}></div>
       </div>
       
-      <video
-        ref={videoRef}
-        src={video.videoUrl}
-        loop
-        muted
-        playsInline
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      <div className="relative w-full h-full bg-black">
+        <video
+          ref={videoRef}
+          src={video.videoUrl}
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      </div>
       
       {!isPlaying && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">

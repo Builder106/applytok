@@ -80,32 +80,34 @@ export default function VideoFeed({ videos }: VideoFeedProps) {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <AnimatePresence initial={false} custom={direction}>
-        <motion.div
-          key={currentIndex}
-          custom={direction}
-          initial={{ y: direction * 500, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: direction * -500, opacity: 0 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-          className="h-full w-full"
-        >
-          <VideoCard video={currentVideo} />
-        </motion.div>
-      </AnimatePresence>
-      
-      {/* Swipe indicators */}
-      {hasPreviousVideo && (
-        <div className="swipe-indicator swipe-up absolute top-1/4 left-1/2 transform -translate-x-1/2 z-15 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white">
-          <i className="ri-arrow-up-s-line"></i>
-        </div>
-      )}
-      
-      {hasNextVideo && (
-        <div className="swipe-indicator swipe-down absolute bottom-1/4 left-1/2 transform -translate-x-1/2 z-15 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white">
-          <i className="ri-arrow-down-s-line"></i>
-        </div>
-      )}
+      <div className="max-w-[calc(100vh*9/16)] mx-auto h-full relative">
+        <AnimatePresence initial={false} custom={direction}>
+          <motion.div
+            key={currentIndex}
+            custom={direction}
+            initial={{ y: direction * 500, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: direction * -500, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="h-full w-full"
+          >
+            <VideoCard video={currentVideo} />
+          </motion.div>
+        </AnimatePresence>
+        
+        {/* Swipe indicators */}
+        {hasPreviousVideo && (
+          <div className="swipe-indicator swipe-up absolute top-1/4 left-1/2 transform -translate-x-1/2 z-15 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white">
+            <i className="ri-arrow-up-s-line"></i>
+          </div>
+        )}
+        
+        {hasNextVideo && (
+          <div className="swipe-indicator swipe-down absolute bottom-1/4 left-1/2 transform -translate-x-1/2 z-15 w-10 h-10 bg-white/20 rounded-full flex items-center justify-center text-white">
+            <i className="ri-arrow-down-s-line"></i>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
