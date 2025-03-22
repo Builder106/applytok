@@ -142,7 +142,10 @@ export class MemStorage implements IStorage {
   async getVideosByType(type: string, limit = 10, offset = 0): Promise<Video[]> {
     return Array.from(this.videos.values())
       .filter((video) => video.videoType === type)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .sort((a, b) => {
+        if (!a.createdAt || !b.createdAt) return 0;
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      })
       .slice(offset, offset + limit);
   }
 
@@ -193,7 +196,10 @@ export class MemStorage implements IStorage {
     
     return Array.from(this.videos.values())
       .filter((video) => video.videoType === videoType && video.userId !== userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .sort((a, b) => {
+        if (!a.createdAt || !b.createdAt) return 0;
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      })
       .slice(0, limit);
   }
 
@@ -235,7 +241,10 @@ export class MemStorage implements IStorage {
   async getComments(videoId: number): Promise<Comment[]> {
     return Array.from(this.comments.values())
       .filter((comment) => comment.videoId === videoId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => {
+        if (!a.createdAt || !b.createdAt) return 0;
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
   }
 
   async createComment(insertComment: InsertComment): Promise<Comment> {
@@ -264,7 +273,10 @@ export class MemStorage implements IStorage {
           (message.senderId === user1Id && message.receiverId === user2Id) ||
           (message.senderId === user2Id && message.receiverId === user1Id)
       )
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      .sort((a, b) => {
+        if (!a.createdAt || !b.createdAt) return 0;
+        return a.createdAt.getTime() - b.createdAt.getTime();
+      });
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
@@ -380,13 +392,13 @@ export class MemStorage implements IStorage {
       skills: ["UI Design", "Figma", "User Research", "Prototyping"]
     });
 
-    // Create some videos
+    // Create some videos with actual video URLs
     this.createVideo({
-      userId: 1, // TechCorp
+      userId: 1,
       title: "Senior Software Engineer",
-      description: "We're looking for a passionate Senior Software Engineer to join our growing team! Work on cutting-edge projects with the latest tech stack.",
-      videoUrl: "https://example.com/videos/techcorp-engineer.mp4",
-      thumbnailUrl: "https://via.placeholder.com/300x500",
+      description: "We're looking for a passionate Senior Software Engineer to join our growing team!",
+      videoUrl: "https://storage.googleapis.com/webfundamentals-assets/videos/chrome.mp4", // Test video from Google
+      thumbnailUrl: null,
       videoType: "job",
       skills: ["React", "Node.js", "AWS"],
       salary: "$120-150k",
@@ -396,11 +408,11 @@ export class MemStorage implements IStorage {
     });
 
     this.createVideo({
-      userId: 2, // Innovate Design
+      userId: 2,
       title: "UX Designer",
-      description: "Join our creative team to design beautiful digital experiences for global brands.",
-      videoUrl: "https://example.com/videos/innovate-ux.mp4",
-      thumbnailUrl: "https://via.placeholder.com/300x500",
+      description: "Join our creative team to design beautiful digital experiences.",
+      videoUrl: "https://storage.googleapis.com/webfundamentals-assets/videos/chrome.mp4", // Test video from Google
+      thumbnailUrl: null,
       videoType: "job",
       skills: ["UI Design", "Figma", "User Research"],
       salary: "$90-120k",

@@ -152,7 +152,7 @@ export default function VideoCard({ video }: VideoCardProps) {
     if (navigator.share) {
       navigator.share({
         title: video.title,
-        text: video.description,
+        text: video.description || '',
         url: window.location.href,
       }).catch(err => console.error('Error sharing', err));
     } else {
@@ -177,139 +177,139 @@ export default function VideoCard({ video }: VideoCardProps) {
   };
   
   return (
-    <div className="video-container relative h-full w-full" onClick={handleVideoClick}>
-      <div className="progress-bar">
-        <div className="progress" style={{ width: `${progress}%` }}></div>
-      </div>
-      
-      <div className="relative w-full h-full bg-black">
-        <video
-          ref={videoRef}
-          src={video.videoUrl}
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-      </div>
-      
-      {!isPlaying && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
-          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl">
-            <i className="ri-play-fill"></i>
+    <div className="video-container relative h-full w-full rounded-xl overflow-hidden" onClick={handleVideoClick}>
+          <div className="progress-bar">
+            <div className="progress" style={{ width: `${progress}%` }}></div>
           </div>
-        </div>
-      )}
-      
-      <div className="video-overlay">
-        <div className="flex items-center gap-3 mb-3">
-          {creator?.profileImage || creator?.companyLogo ? (
-            <img 
-              src={creator.userType === 'employer' ? creator.companyLogo : creator.profileImage} 
-              alt={creator.fullName} 
-              className="w-10 h-10 rounded-full object-cover border-2 border-white"
+          
+          <div className="relative w-full h-full bg-black">
+            <video
+              ref={videoRef}
+              src={video.videoUrl}
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover"
             />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-primary text-white border-2 border-white flex items-center justify-center">
-              {creator?.fullName.charAt(0) || '?'}
+          </div>
+          
+          {!isPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/30 z-10">
+              <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl">
+                <i className="ri-play-fill"></i>
+              </div>
             </div>
           )}
-          <div>
-            <h3 className="font-semibold text-lg">{video.title}</h3>
-            <div className="flex items-center text-sm text-gray-medium">
-              <span>{creator?.userType === 'employer' ? creator.companyName : creator?.fullName}</span>
-              {video.videoType === 'job' && (
-                <>
-                  <span className="mx-1">•</span>
-                  <span>{video.location || 'Remote'}</span>
-                  {video.salary && (
+          
+          <div className="video-overlay absolute bottom-0 left-0 p-3 w-2/3">
+            <div className="flex items-center gap-3 mb-3">
+              {creator?.profileImage || creator?.companyLogo ? (
+                <img
+                  src={creator.userType === 'employer' ? creator.companyLogo || '' : creator.profileImage || ''}
+                  alt={creator.fullName}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-white"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-primary text-white border-2 border-white flex items-center justify-center">
+                  {creator?.fullName.charAt(0) || '?'}
+                </div>
+              )}
+              <div>
+                <h3 className="font-semibold text-lg">{video.title}</h3>
+                <div className="flex items-center text-sm text-gray-medium">
+                  <span>{creator?.userType === 'employer' ? creator.companyName : creator?.fullName}</span>
+                  {video.videoType === 'job' && (
                     <>
                       <span className="mx-1">•</span>
-                      <span>{video.salary}</span>
+                      <span>{video.location || 'Remote'}</span>
+                      {video.salary && (
+                        <>
+                          <span className="mx-1">•</span>
+                          <span>{video.salary}</span>
+                        </>
+                      )}
                     </>
                   )}
-                </>
-              )}
+                </div>
+              </div>
+            </div>
+            
+            <p className="text-sm mb-3">{video.description || ''}</p>
+            
+            {video.skills && video.skills.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {video.skills.map((skill, index) => (
+                  <span key={index} className="skill-tag">{skill}</span>
+                ))}
+              </div>
+            )}
+            
+            {video.videoType === 'job' ? (
+              <button
+                className="bg-accent text-white py-2 px-6 rounded-full font-semibold text-sm flex items-center gap-2"
+                onClick={handleApply}
+              >
+                <i className="ri-user-add-line"></i> Apply Now
+              </button>
+            ) : (
+              <button className="bg-primary text-white py-2 px-6 rounded-full font-semibold text-sm flex items-center gap-2">
+                <i className="ri-message-2-line"></i> Contact
+              </button>
+            )}
+          </div>
+          
+          <div className="side-actions absolute top-0 right-0 p-4 flex flex-col items-center gap-4 bg-black/20">
+            <div className="flex flex-col items-center">
+              <button
+                className="action-btn"
+                onClick={handleLike}
+                disabled={likeMutation.isPending}
+              >
+                <i className="ri-heart-line"></i>
+              </button>
+              <span className="action-count">{video.likes || 0}</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <button
+                className="action-btn"
+                onClick={handleComment}
+              >
+                <i className="ri-message-3-line"></i>
+              </button>
+              <span className="action-count">{video.comments || 0}</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <button
+                className="action-btn"
+                onClick={handleShare}
+                disabled={shareMutation.isPending}
+              >
+                <i className="ri-share-forward-line"></i>
+              </button>
+              <span className="action-count">{video.shares || 0}</span>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <button
+                className="action-btn"
+                onClick={handleBookmark}
+                disabled={createBookmarkMutation.isPending || deleteBookmarkMutation.isPending}
+              >
+                <i className={`${isBookmarked ? 'ri-bookmark-fill' : 'ri-bookmark-line'}`}></i>
+              </button>
+              <span className="action-count">Save</span>
             </div>
           </div>
+          
+          {isApplyModalOpen && (
+            <ApplyModal
+              video={video}
+              onClose={() => setIsApplyModalOpen(false)}
+              creator={creator}
+            />
+          )}
         </div>
-        
-        <p className="text-sm mb-3">{video.description}</p>
-        
-        {video.skills && video.skills.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {video.skills.map((skill, index) => (
-              <span key={index} className="skill-tag">{skill}</span>
-            ))}
-          </div>
-        )}
-        
-        {video.videoType === 'job' ? (
-          <button 
-            className="bg-accent text-white py-2 px-6 rounded-full font-semibold text-sm flex items-center gap-2"
-            onClick={handleApply}
-          >
-            <i className="ri-user-add-line"></i> Apply Now
-          </button>
-        ) : (
-          <button className="bg-primary text-white py-2 px-6 rounded-full font-semibold text-sm flex items-center gap-2">
-            <i className="ri-message-2-line"></i> Contact
-          </button>
-        )}
-      </div>
-      
-      <div className="side-actions">
-        <div className="flex flex-col items-center">
-          <button 
-            className="action-btn" 
-            onClick={handleLike}
-            disabled={likeMutation.isPending}
-          >
-            <i className="ri-heart-line"></i>
-          </button>
-          <span className="action-count">{video.likes || 0}</span>
-        </div>
-        
-        <div className="flex flex-col items-center">
-          <button 
-            className="action-btn"
-            onClick={handleComment}
-          >
-            <i className="ri-message-3-line"></i>
-          </button>
-          <span className="action-count">{video.comments || 0}</span>
-        </div>
-        
-        <div className="flex flex-col items-center">
-          <button 
-            className="action-btn"
-            onClick={handleShare}
-            disabled={shareMutation.isPending}
-          >
-            <i className="ri-share-forward-line"></i>
-          </button>
-          <span className="action-count">{video.shares || 0}</span>
-        </div>
-        
-        <div className="flex flex-col items-center">
-          <button 
-            className="action-btn"
-            onClick={handleBookmark}
-            disabled={createBookmarkMutation.isPending || deleteBookmarkMutation.isPending}
-          >
-            <i className={`${isBookmarked ? 'ri-bookmark-fill' : 'ri-bookmark-line'}`}></i>
-          </button>
-          <span className="action-count">Save</span>
-        </div>
-      </div>
-      
-      {isApplyModalOpen && (
-        <ApplyModal 
-          video={video} 
-          onClose={() => setIsApplyModalOpen(false)}
-          creator={creator}
-        />
-      )}
-    </div>
   );
 }

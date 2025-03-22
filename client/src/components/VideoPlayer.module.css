@@ -1,0 +1,35 @@
+.video-container :global(.video-js) {
+  width: 100%;
+  height: 100%;
+  background-color: black;
+}
+
+.video-container :global(.video-js .vjs-tech) {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+/* Hide default controls */
+.video-container :global(.video-js .vjs-control-bar),
+.video-container :global(.video-js .vjs-big-play-button),
+.video-container :global(.video-js .vjs-loading-spinner) {
+  display: none;
+}
+
+/* Custom loading indicator styles */
+.video-container :global(.video-js.vjs-waiting .vjs-loading-spinner) {
+  display: block;
+  border: 6px solid rgba(255, 255, 255, 0.2);
+  border-top-color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: loading-spinner 1s linear infinite;
+}
+
+@keyframes loading-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
