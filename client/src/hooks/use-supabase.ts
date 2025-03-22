@@ -9,14 +9,24 @@ export function useSupabase() {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+    const initializeAuth = async () => {
+      const { data: { user: initialUser } } = await supabase.auth.getUser()
+      setUser(initialUser)
       setLoading(false)
-    })
+    }
+    
+    initializeAuth()
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null)
+      
+      if (event === 'SIGNED_OUT') {
+        // Clear any auth-related cookies on sign out
+        const expires = new Date(0).toUTCString()
+        document.cookie = `sb-access-token=; path=/; expires=${expires}; secure`
+        document.cookie = `sb-refresh-token=; path=/; expires=${expires}; secure`
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -64,7 +74,12 @@ export function useSupabase() {
     user,
     loading,
     signIn: (provider: 'google' | 'github') =>
-      supabase.auth.signInWithOAuth({ provider }),
+      supabase.auth.signInWithOAuth({ 
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}`
+        }
+      }),
     signOut: () => supabase.auth.signOut(),
     subscribeToMessages,
     uploadFile,

@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createServerClient } from '@supabase/ssr'
 import type { Database } from '../shared/types'
 
 if (!process.env.SUPABASE_URL) {
@@ -9,10 +9,18 @@ if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error('SUPABASE_SERVICE_ROLE_KEY environment variable is not set')
 }
 
-// Create a Supabase client with the service role key for admin operations
-export const supabaseAdmin = createClient<Database>(
+// Create a Supabase admin client with the service role key for admin operations
+export const supabaseAdmin = createServerClient<Database>(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    cookies: {
+      // No cookie handling needed for admin operations
+      get: () => undefined,
+      set: () => {},
+      remove: () => {},
+    },
+  }
 )
 
 // Admin-level database operations

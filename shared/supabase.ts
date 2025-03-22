@@ -1,11 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient, createServerClient } from '@supabase/ssr'
 import type { Database } from './types.ts'
 
-// Get environment variables
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Check if environment variables are loaded
 if (!supabaseUrl) {
   console.error('VITE_SUPABASE_URL is missing or empty. Make sure your .env file is being loaded correctly.')
 }
@@ -14,10 +12,26 @@ if (!supabaseAnonKey) {
   console.error('VITE_SUPABASE_ANON_KEY is missing or empty. Make sure your .env file is being loaded correctly.')
 }
 
-export const supabase = createClient<Database>(
+// Browser client for client-side operations
+export const supabase = createBrowserClient<Database>(
   supabaseUrl || '',
   supabaseAnonKey || ''
 )
+
+// Create server client (for use in server-side code)
+export function createClient(cookieStore: { get: (name: string) => string | undefined }) {
+  return createServerClient<Database>(
+    supabaseUrl || '',
+    supabaseAnonKey || '',
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)
+        },
+      },
+    }
+  )
+}
 
 // Types for Supabase tables
 export type Tables = Database['public']['Tables']
