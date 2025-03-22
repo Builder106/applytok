@@ -98,7 +98,7 @@ export default function Profile() {
   
   if (!user) {
     return (
-      <div className="min-h-screen bg-secondary text-black flex items-center justify-center p-4 pb-16">
+      <div className="min-h-screen bg-secondary text-black dark:text-white flex items-center justify-center p-4 pb-16">
         <div className="text-center">
           <i className="ri-user-line text-4xl mb-4"></i>
           <h2 className="text-xl font-bold mb-2">Sign In Required</h2>

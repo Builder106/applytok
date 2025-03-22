@@ -82,7 +82,7 @@ export default function Messages() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-secondary text-black flex items-center justify-center p-4">
+      <div className="min-h-screen bg-secondary text-black dark:text-white flex items-center justify-center p-4">
         <div className="text-center">
           <i className="ri-message-2-line text-4xl mb-4"></i>
           <h2 className="text-xl font-bold mb-2">Sign In Required</h2>
