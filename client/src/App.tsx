@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { queryClient } from "./lib/queryClient";
 import { useEffect, useState } from "react";
 import { SidebarProvider, useSidebar } from "@/contexts/SidebarContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 // Pages
 import Home from "@/pages/home";
@@ -73,11 +74,13 @@ function App() {
   };
   
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
-      {isFirstVisit && <OnboardingModal onComplete={handleOnboardingComplete} />}
-    </QueryClientProvider>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <Router />
+        <Toaster />
+        {isFirstVisit && <OnboardingModal onComplete={handleOnboardingComplete} />}
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 
