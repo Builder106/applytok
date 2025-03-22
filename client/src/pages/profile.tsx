@@ -98,7 +98,7 @@ export default function Profile() {
   
   if (!user) {
     return (
-      <div className="min-h-screen bg-secondary text-white flex items-center justify-center p-4 pb-16">
+      <div className="min-h-screen bg-secondary text-black flex items-center justify-center p-4 pb-16">
         <div className="text-center">
           <i className="ri-user-line text-4xl mb-4"></i>
           <h2 className="text-xl font-bold mb-2">Sign In Required</h2>
@@ -296,7 +296,9 @@ export default function Profile() {
                           </div>
                         </div>
                         <div className="text-xs text-gray-medium">
-                          Applied {application.createdAt && new Date(application.createdAt).toLocaleDateString()}
+                          Applied {application.createdAt 
+                            ? new Date(String(application.createdAt)).toLocaleDateString()
+                            : 'Unknown date'}
                         </div>
                       </div>
                     ))}

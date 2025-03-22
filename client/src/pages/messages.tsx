@@ -68,7 +68,7 @@ export default function Messages() {
 
     const subscription = subscribeToMessages(user.id, (message) => {
       // If message is from/to selected user, update messages
-      if (selectedUser && (message.senderId.toString() === selectedUser.id.toString() || message.receiverId.toString() === selectedUser.id.toString())) {
+      if (selectedUser && (Number(message.senderId) === selectedUser.id || Number(message.receiverId) === selectedUser.id)) {
         queryClient.invalidateQueries({ queryKey: ['/api/messages', selectedUser.id] });
       }
       // Update conversations list
@@ -82,7 +82,7 @@ export default function Messages() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-secondary text-white flex items-center justify-center p-4">
+      <div className="min-h-screen bg-secondary text-black flex items-center justify-center p-4">
         <div className="text-center">
           <i className="ri-message-2-line text-4xl mb-4"></i>
           <h2 className="text-xl font-bold mb-2">Sign In Required</h2>
@@ -131,7 +131,7 @@ export default function Messages() {
                   <div className="flex-1 min-w-0">
                     <div className="font-medium">{conversationUser.fullName}</div>
                     <div className="text-sm text-gray-medium truncate">
-                      {lastMessage.senderId.toString() === user.id.toString() ? 'You: ' : ''}{lastMessage.content}
+                      {Number(lastMessage.senderId) === Number(user.id) ? 'You: ' : ''}{lastMessage.content}
                     </div>
                   </div>
                   <div className="text-xs text-gray-medium">
@@ -190,10 +190,10 @@ export default function Messages() {
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${message.senderId.toString() === user.id.toString() ? 'justify-end' : 'justify-start'}`}
+                    className={`flex ${Number(message.senderId) === Number(user.id) ? 'justify-end' : 'justify-start'}`}
                   >
                     <div className={`max-w-[75%] rounded-lg p-3 ${
-                      message.senderId.toString() === user.id.toString()
+                      Number(message.senderId) === Number(user.id)
                         ? 'bg-primary text-white' 
                         : 'bg-dark'
                     }`}>
